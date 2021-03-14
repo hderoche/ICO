@@ -39,10 +39,27 @@ module.exports = function (deployer, network, accounts) {
 2. `truffle develop`
 3. `migrate` pour migrer le contract sur le blockchain test
 4. `var myToken = await myToken.deployed()` pour pouvoir interagir depuis la console vers le contrat
-## Phases and getToken functions
+## Customer allow listing
 
-phase est un mapping address => uint8, par défault a 0 partout.
-si `phase[msg.sender] == 0` alors il n'est pas autorisé à acheter des tokens. Seul le propriétaire du contract a ce pouvoir.
+* La fonction `setPhase` permet d'enregistrer le user dans le contract et lui donne la permission d'acheter des **MARS**
+* le mapping `phase` permet de tracer les utilisateurs autorisés. Ils sont autorisés à acheter des tokens si le mapping renvoie une valeur autre que 0
+* le modifier `allowUsers` permet de vérifier cette condition.
+```
+modifier allowUsers(address recipient_) {
+        require(phase[recipient_] > 0, "you are not allowed to buy tokens");
+        _;
+    }
+```
+
+## Multi level distribution
+
+Les entrées pour le listing sont controlés par le mapping `phase`
+`phase` est un mapping address => uint8, par défault a 0 partout.
+
+Les tiers sont distribués en fonction des arrivés sur le contract, premiers ajoutés, premiers servis.
+
+Dans chaque tiers, on garde à la fois le nombre de token distribués pendant le tiers mais sur tout le contrat
+
 ```
 function _getToken(uint256 amount_) 
 internal 
@@ -68,12 +85,6 @@ returns(uint256)
 ```
 
 La fonction getToken utilise les modifiers pour vérifier que l'acheteur ait la permission d'acheter les tokens
-```
-modifier allowUsers(address recipient_) {
-        require(phase[recipient_] > 0, "you are not allowed to buy tokens");
-        _;
-    }
-```
 
 Ensuite pour les phases, les 10 premiers ajoutés bénéficient du tier 1, les 90 prochains du tiers 2, etc...
 

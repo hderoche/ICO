@@ -64,23 +64,24 @@ Dans chaque tiers, on garde à la fois le nombre de token distribués pendant le
 function _getToken(uint256 amount_) 
 internal 
 allowUsers(msg.sender)
-returns(uint256) 
-    {
+returns(uint256) {
         SafeMath.add(totalIssuedToken, amount_);
         if (phase[msg.sender] == 1) {
-            transferFrom(owner(), msg.sender, amount_);
-            SafeMath.add(tokenIssued[1], amount_);
+
+            transferFrom(owner(), msg.sender, 5000*amount_);
+            SafeMath.add(tokenIssued[1], 5000*amount_);
+            SafeMath.add(totalIssuedToken, 5000*amount_);
         }
         else if (phase[msg.sender] == 2) {
-            transferFrom(owner(), msg.sender, amount_);
-            SafeMath.add(tokenIssued[2], amount_);
+            transferFrom(owner(), msg.sender, 2000*amount_);
+            SafeMath.add(tokenIssued[2], 20000*amount_);
+            SafeMath.add(totalIssuedToken, 2000*amount_);
         }
         else if (phase[msg.sender] == 3) {
-            transferFrom(owner(), msg.sender, amount_);
-            SafeMath.add(tokenIssued[3], amount_);
-
+            transferFrom(owner(), msg.sender, 1000*amount_);
+            SafeMath.add(tokenIssued[3], 1000*amount_);
+            SafeMath.add(totalIssuedToken, 1000*amount_);
         }
-        else revert();
     }
 ```
 
@@ -101,7 +102,7 @@ public
 payable
 onlyOwner {
         _mint(recipient_, amount_);
-        Airdrop(recipient_);
+        Airdrop(recipient_, amount_);
     }
 ```
 `Airdrop(recipient_, amount_)` est un évenement qui est émis lors de la création de nouveau token.

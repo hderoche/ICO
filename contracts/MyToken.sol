@@ -38,7 +38,7 @@ contract MyToken is ERC20, Ownable {
     }
 
 
-    // Set phase, First 100 -> 1, then 1000 -> pahse 2 -> 10000 pahse 3
+    // Set phase, First 10 -> 1, then 100 -> pahse 2 -> 1000 phase 3
     function setPhase(address recipient_) public onlyOwner {
         if (count < 10) {
         phase[recipient_] = 1;
@@ -46,10 +46,8 @@ contract MyToken is ERC20, Ownable {
         else if (count < 100) {
             phase[recipient_] = 2;
         }
-        else if (count < 1000) {
+        else {
             phase[recipient_] = 3;
-        } else {
-
         }
         count += 1;
     }
@@ -61,19 +59,21 @@ contract MyToken is ERC20, Ownable {
     function _getToken(uint256 amount_) internal allowUsers(msg.sender) returns(uint256) {
         SafeMath.add(totalIssuedToken, amount_);
         if (phase[msg.sender] == 1) {
-            transferFrom(owner(), msg.sender, amount_);
-            SafeMath.add(tokenIssued[1], amount_);
+
+            transferFrom(owner(), msg.sender, 5000*amount_);
+            SafeMath.add(tokenIssued[1], 5000*amount_);
+            SafeMath.add(totalIssuedToken, 5000*amount_);
         }
         else if (phase[msg.sender] == 2) {
-            transferFrom(owner(), msg.sender, amount_);
-            SafeMath.add(tokenIssued[2], amount_);
+            transferFrom(owner(), msg.sender, 2000*amount_);
+            SafeMath.add(tokenIssued[2], 20000*amount_);
+            SafeMath.add(totalIssuedToken, 2000*amount_);
         }
         else if (phase[msg.sender] == 3) {
-            transferFrom(owner(), msg.sender, amount_);
-            SafeMath.add(tokenIssued[3], amount_);
-
+            transferFrom(owner(), msg.sender, 1000*amount_);
+            SafeMath.add(tokenIssued[3], 1000*amount_);
+            SafeMath.add(totalIssuedToken, 1000*amount_);
         }
-        else revert();
     }
 
     function airdrop(address payable recipient_, uint256 amount_) public payable onlyOwner {

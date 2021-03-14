@@ -4,7 +4,8 @@ import "/Users/hderoche/project/ICO/node_modules/@openzeppelin/contracts/token/E
 import "/Users/hderoche/project/ICO/node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 import "/Users/hderoche/project/ICO/node_modules/@openzeppelin/contracts/access/Ownable.sol";
 
-contract MyToken is ERC20, Ownable{
+
+contract MyToken is ERC20, Ownable {
     
     using SafeMath for uint;
 
@@ -16,11 +17,10 @@ contract MyToken is ERC20, Ownable{
 
     // Mapping for whitelists
     mapping(address => uint8) public phase;
-    mapping(address => bool) public allowedUsers;
     uint256 public count;
     mapping(uint8 => uint256) public tokenIssued;
 
-    event Airdrop(address user);
+    event Airdrop(address user, uint256 amount_);
 
     constructor(
         uint8 decimals_,
@@ -32,17 +32,14 @@ contract MyToken is ERC20, Ownable{
         totalIssuedToken = 0;
     }
 
-    function allowToken(address recipient_) onlyOwner {
-        allowedUsers[recipient_] = true;
-    }
-
-    modifier allowedUsers() {
-        require(allowedUsers[msg.sender] == true, "You are not allowed to buy this token");
+    modifier allowUsers(address recipient_) {
+        require(phase[recipient_] > 0, "you are not allowed to buy tokens");
         _;
     }
 
+
     // Set phase, First 100 -> 1, then 1000 -> pahse 2 -> 10000 pahse 3
-    function setPhase(address recipient_) onlyOwner {
+    function setPhase(address recipient_) public onlyOwner {
         if (count < 10) {
         phase[recipient_] = 1;
         }
@@ -57,7 +54,11 @@ contract MyToken is ERC20, Ownable{
         count += 1;
     }
 
-    function getToken(uint256 amount_) payable internal allowedUsers returns(uint256) {
+
+// The phase mapping is set at 0 for all addresses by default
+// So the modifier check if the address is set above 0
+// if the user is at 0, he cannot buy the token
+    function _getToken(uint256 amount_) internal allowUsers(msg.sender) returns(uint256) {
         SafeMath.add(totalIssuedToken, amount_);
         if (phase[msg.sender] == 1) {
             transferFrom(owner(), msg.sender, amount_);
@@ -72,16 +73,16 @@ contract MyToken is ERC20, Ownable{
             SafeMath.add(tokenIssued[3], amount_);
 
         }
-        else throw;
+        else revert();
     }
 
-    function airdrop(address payable recipient_, uint256 amount_) payable onlyOwner {
+    function airdrop(address payable recipient_, uint256 amount_) public payable onlyOwner {
         _mint(recipient_, amount_);
-        Airdrop(recipient_);
+        Airdrop(recipient_, amount_);
     }
 
     receive () external payable {
-        getToken(msg.value);
+        _getToken(msg.value);
     }
 
 }
